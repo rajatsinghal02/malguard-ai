@@ -5,3 +5,4 @@ pefile
 scikit-learn
 lightgbm
 gunicorn
+signify
