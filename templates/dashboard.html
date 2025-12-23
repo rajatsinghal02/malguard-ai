@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MalGuard // Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&family=Rajdhani:wght@300;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CORE VISUALS --- */
+        :root {
+            --bg-deep: #020203;
+            --neon-blue: #00f3ff;
+            --neon-orange: #ffae00;
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+            --glass: rgba(20, 20, 25, 0.7);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 50% 50%, #111 0%, #000 100%);
+        }
+
+        /* --- NAV --- */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 40px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+        .logo { font-family: 'Orbitron'; font-size: 1.5rem; color: #fff; text-decoration: none; letter-spacing: 2px; }
+        .sys-status { font-family: 'Share Tech Mono'; color: var(--neon-blue); font-size: 0.9rem; }
+
+        /* --- MAIN LAYOUT --- */
+        .hub-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+            padding: 0 50px;
+        }
+
+        /* --- MODULE CARDS --- */
+        .module-card {
+            width: 500px;
+            height: 600px;
+            background: var(--glass);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 50px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: 0.4s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Specific Styles for STATIC */
+        .static-card { border-top: 4px solid var(--neon-blue); }
+        .static-card:hover { 
+            transform: translateY(-10px); 
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.15); 
+            border-color: var(--neon-blue);
+        }
+        .static-card .icon { color: var(--neon-blue); text-shadow: 0 0 20px rgba(0, 243, 255, 0.5); }
+        .static-btn { 
+            border: 1px solid var(--neon-blue); color: var(--neon-blue); 
+        }
+        .static-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
+
+        /* Specific Styles for DYNAMIC */
+        .dynamic-card { border-top: 4px solid var(--neon-orange); }
+        .dynamic-card:hover { 
+            transform: translateY(-10px); 
+            box-shadow: 0 0 40px rgba(255, 174, 0, 0.15); 
+            border-color: var(--neon-orange);
+        }
+        .dynamic-card .icon { color: var(--neon-orange); text-shadow: 0 0 20px rgba(255, 174, 0, 0.5); }
+        .dynamic-btn { 
+            border: 1px solid var(--neon-orange); color: var(--neon-orange); 
+        }
+        .dynamic-btn:hover { background: var(--neon-orange); color: #000; box-shadow: 0 0 20px var(--neon-orange); }
+
+        /* Common Content */
+        .icon { font-size: 5rem; margin-bottom: 30px; transition: 0.4s; }
+        h2 { font-family: 'Orbitron'; font-size: 2.2rem; margin-bottom: 10px; color: #fff; }
+        .sub-text { font-family: 'Share Tech Mono'; color: #888; font-size: 1rem; letter-spacing: 2px; margin-bottom: 30px; }
+        .desc { color: var(--text-dim); line-height: 1.6; margin-bottom: 50px; font-size: 1.1rem; max-width: 400px; }
+
+        .launch-btn {
+            padding: 15px 40px; font-family: 'Orbitron'; font-weight: bold; text-decoration: none;
+            font-size: 1.1rem; transition: 0.3s; margin-top: auto; /* Pushes button to bottom */
+        }
+
+        /* --- FOOTER / OVERLAY --- */
+        .overlay-grid {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
+            background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px; z-index: -1;
+        }
+
+        /* Responsive */
+        @media(max-width: 1100px) {
+            .hub-container { flex-direction: column; height: auto; padding: 50px 20px; }
+            .module-card { width: 100%; height: auto; margin-bottom: 30px; }
+            body { overflow-y: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay-grid"></div>
+
+    <nav>
+        <a href="/" class="logo">MalGuard AI</a>
+        <div class="sys-status">COMMAND CENTER</div>
+    </nav>
+
+    <div class="hub-container">
+
+        <div class="module-card static-card">
+            <div class="icon">📂</div>
+            <h2>STATIC ANALYSIS</h2>
+            <div class="sub-text">STRUCTURAL FORENSICS</div>
+            
+            <p class="desc">
+                <strong>Best for:</strong> Initial triage and rapid scanning.<br><br>
+                Analyzes the file's code structure, entropy, and headers <strong>without executing it</strong>. 
+                100% safe for the host machine and detects hidden malware signatures instantly.
+            </p>
+
+            <a href="{{ url_for('static_analysis_page') }}" class="launch-btn static-btn">
+                INITIALIZE SCANNER
+            </a>
+        </div>
+
+        <div class="module-card dynamic-card">
+            <div class="icon">⚡</div>
+            <h2>DYNAMIC ANALYSIS</h2>
+            <div class="sub-text">BEHAVIORAL SANDBOX</div>
+            
+            <p class="desc">
+                <strong>Best for:</strong> Observing runtime activity.<br><br>
+                Executes the file in a <strong>virtual simulation</strong> to monitor real-time behavior. 
+                Detects network connections, registry changes, and encryption attempts (Ransomware).
+            </p>
+
+            <a href="{{ url_for('dynamic_analysis_page') }}" class="launch-btn dynamic-btn">
+                LAUNCH SIMULATION
+            </a>
+        </div>
+
+    </div>
+
+</body>
+</html>

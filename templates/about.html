@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MalGuard AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&family=Rajdhani:wght@300;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CORE VISUALS (Consistent with Project) --- */
+        :root {
+            --bg-color: #020203;
+            --card-bg: #0b0c10;
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-green: #0aff60;
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes glow { 0% { box-shadow: 0 0 5px rgba(0, 243, 255, 0.2); } 50% { box-shadow: 0 0 20px rgba(0, 243, 255, 0.6); } 100% { box-shadow: 0 0 5px rgba(0, 243, 255, 0.2); } }
+
+        /* --- LAYOUT --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+        /* --- NAVIGATION --- */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 25px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 60px;
+        }
+        .logo { font-family: 'Orbitron'; font-size: 1.5rem; color: #fff; text-decoration: none; font-weight: 900; }
+        .back-link { 
+            color: var(--neon-blue); text-decoration: none; font-family: 'Share Tech Mono'; 
+            font-size: 0.9rem; transition: 0.3s; 
+        }
+        .back-link:hover { text-shadow: 0 0 8px var(--neon-blue); letter-spacing: 1px; }
+
+        /* --- HEADER SECTION --- */
+        .header-section { text-align: center; margin-bottom: 80px; animation: fadeIn 1s forwards; }
+        h1 { font-family: 'Orbitron'; font-size: 3.5rem; margin-bottom: 10px; color: #fff; }
+        .subtitle { font-family: 'Share Tech Mono'; color: var(--neon-purple); letter-spacing: 3px; font-size: 1.2rem; }
+
+        /* --- DEVELOPER CARDS --- */
+        .dev-grid { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 100px; 
+            animation: fadeIn 1s forwards; animation-delay: 0.3s; opacity: 0;
+        }
+
+        .dev-card {
+            background: rgba(20, 20, 25, 0.8); border: 1px solid #333; padding: 40px;
+            position: relative; overflow: hidden; transition: 0.4s;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+        }
+        .dev-card:hover { border-color: var(--neon-blue); transform: translateY(-10px); box-shadow: 0 10px 30px rgba(0, 243, 255, 0.1); }
+        
+        .avatar-circle {
+            width: 150px; height: 150px; border-radius: 50%; background: #000;
+            border: 2px solid var(--neon-blue); margin-bottom: 25px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; color: #333; overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+        }
+        
+        .dev-name { font-family: 'Orbitron'; font-size: 2rem; color: #fff; margin-bottom: 5px; }
+        .dev-role { font-family: 'Share Tech Mono'; color: var(--neon-green); font-size: 1rem; margin-bottom: 20px; letter-spacing: 1px; }
+        .dev-bio { color: var(--text-dim); line-height: 1.6; font-size: 1rem; margin-bottom: 25px; }
+        
+        .social-links { display: flex; gap: 15px; }
+        .social-btn {
+            padding: 8px 16px; border: 1px solid #444; color: #fff; text-decoration: none;
+            font-family: 'Share Tech Mono'; font-size: 0.8rem; transition: 0.3s;
+        }
+        .social-btn:hover { background: var(--neon-blue); color: #000; border-color: var(--neon-blue); }
+
+        /* --- MISSION SECTION --- */
+        .mission-box {
+            background: #0b0c10; border-left: 5px solid var(--neon-purple); padding: 40px;
+            margin-bottom: 80px; animation: fadeIn 1s forwards; animation-delay: 0.6s; opacity: 0;
+        }
+        .mission-title { font-family: 'Orbitron'; font-size: 1.8rem; color: #fff; margin-bottom: 20px; }
+        .mission-text { color: var(--text-dim); font-size: 1.1rem; line-height: 1.8; max-width: 900px; }
+
+        /* --- TECH STACK --- */
+        .stack-grid { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center;
+            animation: fadeIn 1s forwards; animation-delay: 0.8s; opacity: 0;
+        }
+        .stack-item {
+            background: #111; padding: 20px; border: 1px solid #333; color: #888;
+            font-family: 'Share Tech Mono'; transition: 0.3s;
+        }
+        .stack-item:hover { color: var(--neon-blue); border-color: var(--neon-blue); }
+
+        /* --- FOOTER --- */
+        footer { border-top: 1px solid #333; padding: 40px; text-align: center; color: #555; margin-top: 60px; }
+
+        @media(max-width: 768px) {
+            .dev-grid, .stack-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <nav>
+            <a href="/" class="logo">MalGuard AI</a>
+            <a href="/" class="back-link">&lt;&lt; BACK TO HOME</a>
+        </nav>
+
+        <div class="header-section">
+            <h1>MEET THE DEVELOPERS</h1>
+            <div class="subtitle">ARCHITECTS OF NEXT-GEN CYBER DEFENSE</div>
+        </div>
+
+        <div class="dev-grid">
+            
+            <div class="dev-card">
+                <div class="avatar-circle">
+                    <span>AS</span>
+                </div>
+                <h2 class="dev-name">AYUSH SINGH</h2>
+                <div class="dev-role">B.Tech 4th Year - Lead Developer</div>
+                <p class="dev-bio">
+                    Specializing in Machine Learning pipelines and Backend Architecture. 
+                    Ayush engineered the core LightGBM integration and developed the Flask API 
+                    infrastructure that powers MalGuard's real-time inference engine.
+                </p>
+                <div class="social-links">
+                    <a href="#" class="social-btn">LINKEDIN</a>
+                    <a href="#" class="social-btn">GITHUB</a>
+                    <a href="#" class="social-btn">EMAIL</a>
+                </div>
+            </div>
+
+            <div class="dev-card">
+                <div class="avatar-circle">
+                    <span>JC</span>
+                </div>
+                <h2 class="dev-name">JATIN CHAUDHARY</h2>
+                <div class="dev-role">B.Tech 4th Year -  Security Researcher</div>
+                <p class="dev-bio">
+                    Focused on Malware Analysis and Feature Engineering. 
+                    Jatin led the research on the EMBER dataset, optimizing feature extraction vectors 
+                    and ensuring the model's high precision against Zero-Day threats.
+                </p>
+                <div class="social-links">
+                    <a href="#" class="social-btn">LINKEDIN</a>
+                    <a href="#" class="social-btn">GITHUB</a>
+                    <a href="#" class="social-btn">EMAIL</a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mission-box">
+            <h3 class="mission-title">OUR VISION</h3>
+            <p class="mission-text">
+                As final-year Cybersecurity students, we recognized a critical gap in traditional antivirus solutions: 
+                reliance on outdated signatures. <strong>MalGuard AI</strong> was born from our thesis research to bridge this gap. 
+                By combining Static Analysis with advanced Gradient Boosting algorithms, we aim to democratize access to 
+                military-grade threat intelligence tools.
+            </p>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h3 style="font-family:'Orbitron'; color:#fff;">BUILT WITH</h3>
+        </div>
+        <div class="stack-grid">
+            <div class="stack-item">PYTHON 3.10+</div>
+            <div class="stack-item">FLASK FRAMEWORK</div>
+            <div class="stack-item">LIGHTGBM</div>
+            <div class="stack-item">LIEF LIBRARY</div>
+            <div class="stack-item">EMBER DATASET</div>
+            <div class="stack-item">SCIKIT-LEARN</div>
+            <div class="stack-item">CHART.JS</div>
+            <div class="stack-item">HTML5 / CSS3</div>
+        </div>
+
+    </div>
+
+
+
+</body>
+</html>

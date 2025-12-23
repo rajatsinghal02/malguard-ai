@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MalGuard AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;900&family=Rajdhani:wght@300;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CORE VISUALS --- */
+        :root {
+            --bg-color: #020203;
+            --card-bg: #0b0c10;
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-green: #0aff60;
+            --neon-red: #ff003c;
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- LAYOUT --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+        /* --- NAV --- */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 25px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 60px;
+        }
+        .logo { font-family: 'Orbitron'; font-size: 1.5rem; color: #fff; text-decoration: none; font-weight: 900; }
+        .back-link { 
+            color: var(--neon-blue); text-decoration: none; font-family: 'Share Tech Mono'; 
+            font-size: 0.9rem; transition: 0.3s; 
+        }
+        .back-link:hover { text-shadow: 0 0 8px var(--neon-blue); letter-spacing: 1px; }
+
+        /* --- HERO --- */
+        .header-section { text-align: center; margin-bottom: 80px; animation: fadeIn 1s forwards; }
+        h1 { font-family: 'Orbitron'; font-size: 3rem; margin-bottom: 10px; color: #fff; text-transform: uppercase; }
+        .subtitle { font-family: 'Share Tech Mono'; color: var(--neon-green); letter-spacing: 3px; font-size: 1.2rem; }
+        p.intro { max-width: 800px; margin: 20px auto; color: var(--text-dim); font-size: 1.1rem; line-height: 1.6; }
+
+        /* --- THREAT GRID --- */
+        .section-title { 
+            font-family: 'Orbitron'; font-size: 2rem; border-left: 5px solid var(--neon-red); 
+            padding-left: 20px; margin-bottom: 40px; color: #fff;
+        }
+
+        .threat-grid { 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-bottom: 100px; 
+            animation: fadeIn 1s forwards; animation-delay: 0.3s; opacity: 0;
+        }
+        
+        .threat-card {
+            background: rgba(20, 20, 25, 0.6); border: 1px solid #333; padding: 30px;
+            transition: 0.3s; position: relative; overflow: hidden;
+        }
+        .threat-card:hover { border-color: var(--neon-red); transform: translateY(-5px); background: rgba(255, 0, 60, 0.05); }
+        
+        .icon-box { font-size: 2.5rem; margin-bottom: 15px; }
+        .t-title { font-family: 'Orbitron'; font-size: 1.4rem; color: #fff; margin-bottom: 10px; }
+        .t-desc { color: var(--text-dim); font-size: 1rem; line-height: 1.5; }
+        .badge { 
+            display: inline-block; padding: 4px 10px; background: #330000; color: var(--neon-red); 
+            font-family: 'Share Tech Mono'; font-size: 0.7rem; margin-bottom: 15px; border: 1px solid var(--neon-red);
+        }
+
+        /* --- DEFENSE PROTOCOLS --- */
+        .defense-section { margin-bottom: 100px; animation: fadeIn 1s forwards; animation-delay: 0.6s; opacity: 0; }
+        .defense-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        
+        .protocol-list { list-style: none; }
+        .protocol-item {
+            background: #0f1012; border-left: 3px solid var(--neon-blue); padding: 20px;
+            margin-bottom: 15px; display: flex; align-items: flex-start; gap: 15px;
+            transition: 0.3s;
+        }
+        .protocol-item:hover { border-left-color: var(--neon-green); background: #15161a; padding-left: 30px; }
+        
+        .check-icon { color: var(--neon-green); font-size: 1.2rem; margin-top: 2px; }
+        .proto-title { font-family: 'Orbitron'; color: #fff; font-size: 1.1rem; margin-bottom: 5px; }
+        .proto-desc { color: #888; font-size: 0.95rem; }
+
+        /* --- CALL TO ACTION --- */
+        .cta-box {
+            text-align: center; background: linear-gradient(45deg, #0b0c10, #141418);
+            border: 1px solid #333; padding: 60px; border-radius: 10px;
+            animation: fadeIn 1s forwards; animation-delay: 0.8s; opacity: 0;
+        }
+        .cta-btn {
+            display: inline-block; background: transparent; border: 2px solid var(--neon-blue);
+            color: var(--neon-blue); padding: 15px 40px; font-family: 'Orbitron'; font-weight: bold;
+            text-decoration: none; margin-top: 20px; transition: 0.3s;
+        }
+        .cta-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
+
+        /* Footer */
+        footer { border-top: 1px solid #333; padding: 40px; text-align: center; color: #555; margin-top: 60px; }
+
+        @media(max-width: 768px) { .threat-grid, .defense-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <nav>
+            <a href="/" class="logo">MalGuard AI</a>
+            <a href="/" class="back-link">&lt;&lt; BACK TO HOME</a>
+        </nav>
+
+        <div class="header-section">
+            <h1>THREAT AWARENESS</h1>
+            <div class="subtitle">KNOW YOUR ENEMY. SECURE YOUR SYSTEM.</div>
+            <p class="intro">
+                Cybersecurity is not just about tools; it's about mindset. Understanding common attack vectors 
+                is the first line of defense against data breaches and system compromises.
+            </p>
+        </div>
+
+        <h2 class="section-title">COMMON THREAT VECTORS</h2>
+        <div class="threat-grid">
+            
+            <div class="threat-card">
+                <div class="badge">HIGH SEVERITY</div>
+                <div class="icon-box">🎣</div>
+                <h3 class="t-title">PHISHING</h3>
+                <p class="t-desc">
+                    Deceptive emails or messages designed to trick you into revealing sensitive info like passwords.
+                    Attackers often impersonate trusted entities like banks or IT support.
+                </p>
+            </div>
+
+            <div class="threat-card">
+                <div class="badge">CRITICAL SEVERITY</div>
+                <div class="icon-box">🔒</div>
+                <h3 class="t-title">RANSOMWARE</h3>
+                <p class="t-desc">
+                    Malware that encrypts your files and demands payment for the decryption key.
+                    Often delivered via malicious email attachments or unpatched vulnerabilities.
+                </p>
+            </div>
+
+            <div class="threat-card">
+                <div class="badge">MEDIUM SEVERITY</div>
+                <div class="icon-box">🐴</div>
+                <h3 class="t-title">TROJANS</h3>
+                <p class="t-desc">
+                    Malicious code disguised as legitimate software. Unlike viruses, Trojans do not replicate 
+                    but create backdoors for attackers to access your system.
+                </p>
+            </div>
+
+            <div class="threat-card">
+                <div class="badge">HIGH SEVERITY</div>
+                <div class="icon-box">🐛</div>
+                <h3 class="t-title">ZERO-DAY EXPLOITS</h3>
+                <p class="t-desc">
+                    Attacks targeting software vulnerabilities that are unknown to the vendor. 
+                    <strong>MalGuard AI</strong> specializes in detecting these unknown signatures.
+                </p>
+            </div>
+
+            <div class="threat-card">
+                <div class="badge">MEDIUM SEVERITY</div>
+                <div class="icon-box">🕵️</div>
+                <h3 class="t-title">SPYWARE</h3>
+                <p class="t-desc">
+                    Software that secretly monitors user activity, capturing keystrokes, screenshots, 
+                    and browsing habits to steal identities or corporate data.
+                </p>
+            </div>
+
+            <div class="threat-card">
+                <div class="badge">LOW SEVERITY</div>
+                <div class="icon-box">💥</div>
+                <h3 class="t-title">ADWARE</h3>
+                <p class="t-desc">
+                    Unwanted software that automatically displays or downloads advertising material. 
+                    While often just annoying, it can degrade system performance and privacy.
+                </p>
+            </div>
+        </div>
+
+        <div class="defense-section">
+            <h2 class="section-title" style="border-color: var(--neon-green);">DEFENSE PROTOCOLS</h2>
+            
+            <div class="defense-grid">
+                <div>
+                    <h3 style="color:#fff; margin-bottom:20px; font-family:'Orbitron'">Active Measures</h3>
+                    <ul class="protocol-list">
+                        <li class="protocol-item">
+                            <span class="check-icon">✓</span>
+                            <div>
+                                <div class="proto-title">Static Analysis Scanning</div>
+                                <div class="proto-desc">Always scan downloaded binaries with tools like MalGuard AI before execution.</div>
+                            </div>
+                        </li>
+                        <li class="protocol-item">
+                            <span class="check-icon">✓</span>
+                            <div>
+                                <div class="proto-title">Multi-Factor Authentication (MFA)</div>
+                                <div class="proto-desc">Enable 2FA on all accounts. Passwords alone are no longer sufficient defense.</div>
+                            </div>
+                        </li>
+                        <li class="protocol-item">
+                            <span class="check-icon">✓</span>
+                            <div>
+                                <div class="proto-title">Regular Backups</div>
+                                <div class="proto-desc">Keep offline backups (3-2-1 rule) to neutralize the threat of Ransomware.</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 style="color:#fff; margin-bottom:20px; font-family:'Orbitron'">System Hygiene</h3>
+                    <ul class="protocol-list">
+                        <li class="protocol-item">
+                            <span class="check-icon">✓</span>
+                            <div>
+                                <div class="proto-title">Patch Management</div>
+                                <div class="proto-desc">Update OS and software immediately. Unpatched exploits are the #1 entry point.</div>
+                            </div>
+                        </li>
+                        <li class="protocol-item">
+                            <span class="check-icon">✓</span>
+                            <div>
+                                <div class="proto-title">Least Privilege Principle</div>
+                                <div class="proto-desc">Do not run your daily computer usage on an Administrator account.</div>
+                            </div>
+                        </li>
+                        <li class="protocol-item">
+                            <span class="check-icon">✓</span>
+                            <div>
+                                <div class="proto-title">Verify Digital Signatures</div>
+                                <div class="proto-desc">Ensure executables are signed by a trusted vendor (Microsoft, Adobe, etc.).</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-box">
+            <h2 style="color: #fff; font-family: 'Orbitron'; margin-bottom: 10px;">DON'T BE A VICTIM</h2>
+            <p style="color: #888; margin-bottom: 20px;">Use our advanced Static Analysis tool to check suspicious files now.</p>
+            <a href="{{ url_for('static_analysis_page') }}" class="cta-btn">LAUNCH SCANNER</a>
+        </div>
+
+    </div>
+
+ 
+</body>
+</html>

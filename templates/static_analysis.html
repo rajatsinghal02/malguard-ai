@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MalGuard AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@500;900&family=Rajdhani:wght@300;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+    <style>
+        /* --- CORE VISUALS --- */
+        :root {
+            --bg-deep: #050505;
+            --panel-bg: rgba(15, 18, 25, 0.7);
+            --neon-blue: #00f3ff;
+            --neon-red: #ff2a2a;
+            --neon-green: #0aff60;
+            --neon-amber: #ffae00;
+            --border: 1px solid rgba(255, 255, 255, 0.1);
+            --glass: blur(10px);
+        }
+
+        * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--neon-blue) #111; }
+
+        body {
+            background-color: var(--bg-deep);
+            color: #e0e6ed;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0; overflow-x: hidden;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        /* --- LAYOUT --- */
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        
+        /* Nav */
+        nav { 
+            display: flex; justify-content: space-between; align-items: center; padding: 20px 0; 
+            border-bottom: 1px solid rgba(0,243,255,0.2); margin-bottom: 40px; 
+        }
+        .logo { font-family: 'Orbitron'; font-size: 1.8rem; color: #fff; text-decoration: none; letter-spacing: 2px; }
+        .status-badge { 
+            background: rgba(0, 243, 255, 0.1); border: 1px solid var(--neon-blue); 
+            padding: 5px 15px; font-family: 'JetBrains Mono'; font-size: 0.8rem; color: var(--neon-blue);
+        }
+
+        /* --- INPUT SECTION --- */
+        .mission-control { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; animation: slideUp 0.8s ease-out; }
+        
+        .control-card {
+            background: var(--panel-bg); border: 1px solid #333; padding: 40px; border-radius: 4px;
+            text-align: center; position: relative; overflow: hidden; transition: 0.3s; backdrop-filter: var(--glass);
+        }
+        .control-card:hover { border-color: var(--neon-blue); box-shadow: 0 0 30px rgba(0, 243, 255, 0.1); }
+        .control-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+            transform: translateX(-100%); transition: 0.5s;
+        }
+        .control-card:hover::before { transform: translateX(100%); }
+
+        .card-icon { font-size: 3.5rem; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(0,243,255,0.5)); }
+        .card-header { font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 10px; color: #fff; }
+        .card-sub { font-family: 'JetBrains Mono'; color: #888; font-size: 0.8rem; margin-bottom: 30px; }
+
+        .cyber-btn {
+            background: transparent; border: 1px solid var(--neon-blue); color: var(--neon-blue);
+            padding: 12px 35px; font-family: 'Orbitron'; font-weight: bold; letter-spacing: 1px;
+            cursor: pointer; transition: 0.3s; text-transform: uppercase; position: relative; overflow: hidden;
+        }
+        .cyber-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
+
+        .cyber-input {
+            background: rgba(0,0,0,0.5); border: 1px solid #444; color: var(--neon-blue); padding: 15px;
+            width: 100%; font-family: 'JetBrains Mono'; text-align: center; outline: none; transition: 0.3s;
+        }
+        .cyber-input:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 243, 255, 0.2); }
+
+        /* --- LOADING TERMINAL --- */
+        .terminal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 999; align-items: center; justify-content: center;
+        }
+        .terminal-box {
+            width: 800px; height: 500px; background: #0a0a0a; border: 1px solid #333; 
+            font-family: 'JetBrains Mono'; padding: 20px; color: var(--neon-green); 
+            overflow: hidden; position: relative; box-shadow: 0 0 50px rgba(0, 255, 96, 0.1);
+        }
+        .terminal-header { border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px; color: #666; font-size: 0.8rem; display: flex; justify-content: space-between; }
+        .scan-line {
+            position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: rgba(0, 255, 0, 0.5);
+            animation: scan 2s linear infinite; opacity: 0.3;
+        }
+        @keyframes scan { 0% {top: 0;} 100% {top: 100%;} }
+
+        /* --- RESULTS DASHBOARD --- */
+        .dashboard { display: none; animation: fadeIn 1s forwards; }
+        
+        /* Verdict Banner */
+        .verdict-banner {
+            text-align: center; padding: 40px; margin-bottom: 30px; border: 1px solid #333;
+            background: radial-gradient(circle, rgba(20,20,20,1) 0%, rgba(5,5,5,1) 100%);
+            position: relative; overflow: hidden;
+        }
+        .verdict-title { font-family: 'Orbitron'; font-size: 4rem; font-weight: 900; line-height: 1; margin-bottom: 10px; }
+        .verdict-sub { font-family: 'JetBrains Mono'; color: #888; letter-spacing: 2px; }
+        
+        .safe-mode { color: var(--neon-green); text-shadow: 0 0 20px rgba(10, 255, 96, 0.5); border-color: var(--neon-green); }
+        .danger-mode { color: var(--neon-red); text-shadow: 0 0 30px rgba(255, 42, 42, 0.6); border-color: var(--neon-red); }
+
+        /* Grid Layout */
+        .analytics-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        .panel { background: var(--panel-bg); border: 1px solid #333; padding: 25px; border-radius: 4px; }
+        .panel h3 { font-family: 'Orbitron'; color: #fff; margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; font-size: 1.1rem; display: flex; justify-content: space-between; }
+        
+        /* Detailed Stats */
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px dashed #333; padding-bottom: 5px; }
+        .stat-label { color: #888; font-family: 'JetBrains Mono'; font-size: 0.9rem; }
+        .stat-val { color: var(--neon-blue); font-weight: bold; font-family: 'Share Tech Mono'; }
+
+        /* Hex Dump Simulation */
+        .hex-dump {
+            font-family: 'JetBrains Mono'; font-size: 0.8rem; color: #555; 
+            background: #000; padding: 15px; height: 150px; overflow: hidden;
+            border-left: 2px solid var(--neon-blue); opacity: 0.7;
+        }
+
+        /* Animations */
+        @keyframes slideUp { from {opacity:0; transform:translateY(30px);} to {opacity:1; transform:translateY(0);} }
+        @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <nav>
+            <a href="/" class="logo">MalGuard AI</a>
+            <div class="status-badge">SYSTEM STATUS: ONLINE</div>
+            <a href="/" style="color: #666; text-decoration: none; font-size: 0.9rem;">[ TERMINATE SESSION ]</a>
+        </nav>
+
+        <div id="missionControl" class="mission-control">
+            
+            <div class="control-card">
+                <div class="card-icon">📂</div>
+                <div class="card-header">BINARY FORENSICS</div>
+                <div class="card-sub">STATIC PE/DLL ANALYSIS</div>
+                
+                <input type="file" id="fileElem" hidden onchange="handleFileSelect(this)">
+                <div id="fileInfo" style="display:none; margin-bottom:20px; color:var(--neon-green); font-family:'JetBrains Mono';"></div>
+                
+                <button class="cyber-btn" onclick="document.getElementById('fileElem').click()">LOAD ARTIFACT</button>
+                <button class="cyber-btn" id="scanFileBtn" style="display:none; border-color:var(--neon-green); color:var(--neon-green);" onclick="startFileScan()">EXECUTE ANALYSIS</button>
+            </div>
+
+            <div class="control-card">
+                <div class="card-icon">📡</div>
+                <div class="card-header">NETWORK INTEL</div>
+                <div class="card-sub">PHISHING & DOMAIN REPUTATION</div>
+                
+                <input type="text" id="urlInput" class="cyber-input" placeholder="ENTER TARGET URL [HTTP/HTTPS]">
+                <br><br>
+                <button class="cyber-btn" onclick="startUrlScan()">INITIATE TRACE</button>
+            </div>
+        </div>
+
+        <div id="dashboard" class="dashboard">
+            
+            <div id="verdictPanel" class="verdict-banner">
+                <div class="verdict-title" id="verdictTitle">ANALYZING...</div>
+                <div class="verdict-sub" id="verdictSub">CALCULATING THREAT VECTORS</div>
+            </div>
+
+            <div class="analytics-grid">
+                
+                <div style="display: flex; flex-direction: column; gap: 30px;">
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="panel">
+                            <h3>THREAT CONFIDENCE <span style="color:var(--neon-blue)">AI-LGBM</span></h3>
+                            <div style="height: 200px; position: relative;">
+                                <canvas id="gaugeChart"></canvas>
+                                <div id="scoreText" style="position: absolute; top:50%; left:50%; transform:translate(-50%, -20%); font-size:2rem; font-weight:bold; color:#fff;">0%</div>
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <h3>STRUCTURAL DNA <span style="color:var(--neon-blue)">PE-MAP</span></h3>
+                            <div style="height: 200px;">
+                                <canvas id="radarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h3>ENTROPY DISTRIBUTION & FEATURES</h3>
+                        <div style="height: 180px;">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 30px;">
+                    
+                    <div class="panel">
+                        <h3>ARTIFACT METADATA</h3>
+                        <div class="stat-row"><span class="stat-label">FILENAME</span> <span class="stat-val" id="metaName">unknown.exe</span></div>
+                        <div class="stat-row"><span class="stat-label">SIZE</span> <span class="stat-val" id="metaSize">0 KB</span></div>
+                        <div class="stat-row"><span class="stat-label">TYPE</span> <span class="stat-val" id="metaType">PE32</span></div>
+                        <div class="stat-row"><span class="stat-label">SECTIONS</span> <span class="stat-val" id="metaSections">0</span></div>
+                        <div class="stat-row"><span class="stat-label">IMPORTS</span> <span class="stat-val" id="metaImports">0</span></div>
+                    </div>
+
+                    <div class="panel">
+                        <h3>CRYPTOGRAPHIC HASH</h3>
+                        <div style="margin-bottom: 10px;">
+                            <span class="stat-label">SHA-256</span><br>
+                            <span class="stat-val" id="metaHash" style="font-size:0.7rem; word-break:break-all; color:#888;">CALCULATING...</span>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h3>HEX PREVIEW</h3>
+                        <div class="hex-dump">
+                            00000000  4D 5A 90 00 03 00 00 00  04 00 00 00 FF FF 00 00  |MZ..............|<br>
+                            00000010  B8 00 00 00 00 00 00 00  40 00 00 00 00 00 00 00  |........@.......|<br>
+                            00000020  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|<br>
+                            00000030  00 00 00 00 00 00 00 00  00 00 00 00 80 00 00 00  |................|<br>
+                            00000040  0E 1F BA 0E 00 B4 09 CD  21 B8 01 4C CD 21 54 68  |........!..L.!Th|<br>
+                            00000050  69 73 20 70 72 6F 67 72  61 6D 20 63 61 6E 6E 6F  |is program canno|<br>
+                            <span style="color:var(--neon-blue)">// PARTIAL DUMP...</span>
+                        </div>
+                    </div>
+                    
+                    <button class="cyber-btn" onclick="location.reload()" style="width:100%;">NEW ANALYSIS</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div id="terminal" class="terminal-overlay">
+        <div class="terminal-box">
+            <div class="scan-line"></div>
+            <div class="terminal-header">
+                <span>ROOT@MALGUARD:/BIN/ANALYSIS</span>
+                <span>PID: 8942</span>
+            </div>
+            <div id="terminalOutput" style="white-space: pre-wrap; line-height: 1.5;"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- GLOBAL STATE ---
+        let selectedFile = null;
+        const terminal = document.getElementById('terminal');
+        const output = document.getElementById('terminalOutput');
+        
+        // --- FILE SELECTION ---
+        function handleFileSelect(input) {
+            if(input.files.length > 0) {
+                selectedFile = input.files[0];
+                document.getElementById('fileInfo').innerText = `>> ${selectedFile.name} (${(selectedFile.size/1024).toFixed(1)} KB)`;
+                document.getElementById('fileInfo').style.display = 'block';
+                document.getElementById('scanFileBtn').style.display = 'inline-block';
+            }
+        }
+
+        // --- SHA256 GENERATOR ---
+        async function calculateHash(file) {
+            const buffer = await file.arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // --- TERMINAL WRITER ---
+        const logs = [
+            "INITIALIZING SENTINEL PROTOCOL v2.4...",
+            "MOUNTING SANDBOX ENVIRONMENT...",
+            "ALLOCATING MEMORY BLOCKS [0x0040000 - 0x0080000]",
+            "LOADING LIEF PARSER MODULE...",
+            "EXTRACTING PE HEADERS...",
+            "CALCULATING SHANNON ENTROPY...",
+            "IMPORT TABLE HASHING (IMPHASH)...",
+            "RUNNING LIGHTGBM INFERENCE ENGINE...",
+            "COMPILING FORENSIC REPORT..."
+        ];
+
+        async function runTerminal() {
+            terminal.style.display = 'flex';
+            output.innerHTML = "";
+            for (let line of logs) {
+                let timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
+                output.innerHTML += `<span style="color:#666">[${timestamp}]</span> ${line}\n`;
+                await new Promise(r => setTimeout(r, 600)); // Delay between lines
+            }
+        }
+
+        // --- FILE SCAN LOGIC ---
+        async function startFileScan() {
+            if(!selectedFile) return;
+
+            // 1. Calculate Hash in Background
+            const fileHash = await calculateHash(selectedFile);
+
+            // 2. Run Visual Loader
+            await runTerminal();
+
+            // 3. API Call
+            let formData = new FormData();
+            formData.append('file', selectedFile);
+
+            fetch('/predict_file', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                data.hash = fileHash; // Add calculated hash to data
+                renderDashboard(data);
+            })
+            .catch(err => alert("ANALYSIS FAILED: " + err));
+        }
+
+        // --- URL SCAN LOGIC ---
+        async function startUrlScan() {
+            const url = document.getElementById('urlInput').value;
+            if(!url) return alert("ENTER VALID URL");
+
+            await runTerminal();
+
+            fetch('/predict_url', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({url: url}) 
+            })
+            .then(res => res.json())
+            .then(data => {
+                data.hash = "N/A (URL SCAN)";
+                renderDashboard(data);
+            })
+            .catch(err => alert("NETWORK ERROR: " + err));
+        }
+
+        // --- DASHBOARD RENDERER ---
+        function renderDashboard(data) {
+            terminal.style.display = 'none';
+            document.getElementById('missionControl').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+
+            // 1. Text Data
+            document.getElementById('metaName').innerText = data.name;
+            document.getElementById('metaSize').innerText = data.metadata.size_kb ? data.metadata.size_kb.toFixed(1) + " KB" : "N/A";
+            document.getElementById('metaType').innerText = data.type;
+            document.getElementById('metaSections').innerText = data.metadata.sections || 0;
+            document.getElementById('metaImports').innerText = data.metadata.imports || 0;
+            document.getElementById('metaHash').innerText = data.hash;
+
+            // 2. Verdict Styling
+            const vPanel = document.getElementById('verdictPanel');
+            const vTitle = document.getElementById('verdictTitle');
+            const vSub = document.getElementById('verdictSub');
+            
+            let isMalware = (data.prediction === "MALWARE" || data.prediction === "MALICIOUS");
+            if(isMalware) {
+                vPanel.className = "verdict-banner danger-mode";
+                vTitle.innerText = "THREAT DETECTED";
+                vSub.innerText = "CRITICAL: MALICIOUS SIGNATURE MATCHED";
+            } else {
+                vPanel.className = "verdict-banner safe-mode";
+                vTitle.innerText = "SYSTEM SECURE";
+                vSub.innerText = "NO MALICIOUS INDICATORS FOUND";
+            }
+            document.getElementById('scoreText').innerText = data.probability + "%";
+
+            // 3. GRAPH: GAUGE
+            new Chart(document.getElementById('gaugeChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Threat', 'Safe'],
+                    datasets: [{
+                        data: [data.probability, 100 - data.probability],
+                        backgroundColor: [isMalware ? '#ff2a2a' : '#00f3ff', '#222'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { cutout: '85%', responsive: true, maintainAspectRatio: false }
+            });
+
+            // 4. GRAPH: RADAR (DNA)
+            new Chart(document.getElementById('radarChart'), {
+                type: 'radar',
+                data: {
+                    labels: ['Entropy', 'Imports', 'Headers', 'Size', 'Exports'],
+                    datasets: [{
+                        label: 'File Signature',
+                        data: [
+                            Math.random() * 10, 
+                            Math.min((data.metadata.imports||0)/10, 10), 
+                            8, 
+                            Math.min((data.metadata.size_kb||0)/100, 10), 
+                            Math.min((data.metadata.exports||0), 10)
+                        ],
+                        backgroundColor: isMalware ? 'rgba(255, 42, 42, 0.3)' : 'rgba(0, 243, 255, 0.3)',
+                        borderColor: isMalware ? '#ff2a2a' : '#00f3ff',
+                        pointBackgroundColor: '#fff'
+                    }]
+                },
+                options: {
+                    scales: { r: { grid: { color: '#333' }, ticks: { display: false }, pointLabels: { color: '#888', font: {size: 10} } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 5. GRAPH: BAR (Entropy/Features)
+            new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Sec 1', 'Sec 2', 'Sec 3', 'Sec 4', 'Sec 5'],
+                    datasets: [{
+                        label: 'Section Entropy',
+                        data: Array.from({length: 5}, () => Math.random() * 8), // Simulated Entropy
+                        backgroundColor: isMalware ? '#ff2a2a' : '#0aff60'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, grid: {color:'#333'} }, x: { grid: {display:false} } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

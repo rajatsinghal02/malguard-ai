@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MalGuard // Dynamic Sandbox</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --bg: #050505; --neon-red: #ff2a2a; --neon-orange: #ffae00; --text: #e0e6ed; }
+        body { 
+            background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace;
+            padding: 2rem; background-image: radial-gradient(circle, #111 0%, #000 100%);
+        }
+        
+        /* Layout */
+        .container { max-width: 1200px; margin: 0 auto; }
+        nav { display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 40px; }
+        .logo { font-family: 'Orbitron'; font-size: 1.5rem; color: #fff; text-decoration: none; }
+        
+        /* Upload Area */
+        .upload-box {
+            border: 2px dashed #444; padding: 40px; text-align: center; margin-bottom: 40px;
+            background: rgba(20,20,20,0.5); transition: 0.3s;
+        }
+        .upload-box:hover { border-color: var(--neon-orange); background: rgba(255, 174, 0, 0.05); }
+        .cyber-btn {
+            background: transparent; border: 1px solid var(--neon-orange); color: var(--neon-orange);
+            padding: 10px 30px; font-family: 'Orbitron'; cursor: pointer; margin-top: 15px;
+        }
+        .cyber-btn:hover { background: var(--neon-orange); color: #000; }
+
+        /* Sandbox View */
+        .sandbox-grid { display: none; grid-template-columns: 2fr 1fr; gap: 30px; }
+        
+        /* Terminal */
+        .terminal-window {
+            background: #000; border: 1px solid #333; height: 500px; padding: 20px;
+            overflow-y: auto; box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+        .log-line { margin-bottom: 5px; opacity: 0; animation: fadeIn 0.3s forwards; }
+        .log-time { color: #666; margin-right: 10px; }
+        .log-warn { color: var(--neon-red); }
+        .log-info { color: var(--neon-orange); }
+
+        /* Behavior Panel */
+        .behavior-panel { background: #111; border: 1px solid #333; padding: 25px; }
+        .behavior-item { 
+            display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; 
+        }
+        .b-badge { padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .active { background: var(--neon-red); color: #fff; }
+        .inactive { background: #333; color: #888; }
+
+        @keyframes fadeIn { to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <nav>
+            <a href="/" class="logo">MalGuard AI</a>
+            <div style="color: var(--neon-orange);">SANDBOX ENVIRONMENT: ACTIVE</div>
+        </nav>
+
+        <div id="uploadArea" class="upload-box">
+            <h1 style="font-family: 'Orbitron';">DYNAMIC BEHAVIORAL ANALYSIS</h1>
+            <p>Upload Windows PE to execute in Virtual Sandbox</p>
+            <input type="file" id="fileElem" hidden onchange="runAnalysis(this.files[0])">
+            <button class="cyber-btn" onclick="document.getElementById('fileElem').click()">LOAD EXECUTABLE</button>
+        </div>
+
+        <div id="sandboxUI" class="sandbox-grid">
+            
+            <div>
+                <h3 style="color: var(--neon-orange);">>> LIVE EXECUTION LOGS</h3>
+                <div class="terminal-window" id="terminal">
+                    </div>
+            </div>
+
+            <div class="behavior-panel">
+                <h3 style="font-family:'Orbitron'">BEHAVIORAL SIGNATURES</h3>
+                
+                <div class="behavior-item">
+                    <span>NETWORK TRAFFIC</span>
+                    <span id="b-network" class="b-badge inactive">INACTIVE</span>
+                </div>
+                <div class="behavior-item">
+                    <span>FILE SYSTEM ACCESS</span>
+                    <span id="b-filesystem" class="b-badge inactive">INACTIVE</span>
+                </div>
+                <div class="behavior-item">
+                    <span>REGISTRY MODIFICATION</span>
+                    <span id="b-registry" class="b-badge inactive">INACTIVE</span>
+                </div>
+                <div class="behavior-item">
+                    <span>ENCRYPTION (RANSOM)</span>
+                    <span id="b-crypto" class="b-badge inactive">INACTIVE</span>
+                </div>
+
+                <div style="margin-top: 40px; text-align: center;">
+                    <h1>THREAT SCORE</h1>
+                    <div id="threatScore" style="font-size: 4rem; font-weight: bold; color: #333;">0/10</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        async function runAnalysis(file) {
+            // UI Switch
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('sandboxUI').style.display = 'grid';
+            
+            const terminal = document.getElementById('terminal');
+            
+            // 1. Initial Logs
+            addLog("INITIALIZING VIRTUAL MACHINE...", "INFO");
+            await wait(800);
+            addLog("LOADING BINARY: " + file.name, "INFO");
+            await wait(800);
+
+            // 2. Send to Backend
+            let formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/run_dynamic', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(async data => {
+                    
+                    // 3. Stream the "Execution" Logs
+                    for (const log of data.logs) {
+                        let type = log.includes("[!]") ? "WARN" : "INFO";
+                        addLog(log, type);
+                        await wait(random(200, 800)); // Simulate processing time
+                    }
+
+                    // 4. Update Sidebar
+                    updateBadge('b-network', data.behaviors.network);
+                    updateBadge('b-filesystem', data.behaviors.file_system);
+                    updateBadge('b-registry', data.behaviors.registry);
+                    updateBadge('b-crypto', data.behaviors.crypto);
+
+                    // 5. Final Score
+                    const scoreElem = document.getElementById('threatScore');
+                    scoreElem.innerText = data.score + "/10";
+                    scoreElem.style.color = data.score > 5 ? "var(--neon-red)" : "var(--neon-orange)";
+                    
+                    addLog("ANALYSIS COMPLETE. REPORT GENERATED.", "INFO");
+                })
+                .catch(err => addLog("ERROR: " + err, "WARN"));
+        }
+
+        function addLog(msg, type) {
+            const terminal = document.getElementById('terminal');
+            const div = document.createElement('div');
+            div.className = "log-line";
+            
+            const time = new Date().toLocaleTimeString('en-US', {hour12:false});
+            const colorClass = type === "WARN" ? "log-warn" : "log-info";
+            
+            div.innerHTML = `<span class="log-time">[${time}]</span> <span class="${colorClass}">${msg}</span>`;
+            terminal.appendChild(div);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function updateBadge(id, isActive) {
+            const el = document.getElementById(id);
+            if(isActive) {
+                el.className = "b-badge active";
+                el.innerText = "DETECTED";
+            }
+        }
+
+        const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+        const random = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+    </script>
+
+</body>
+</html>
